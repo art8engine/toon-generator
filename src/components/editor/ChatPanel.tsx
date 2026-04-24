@@ -8,7 +8,6 @@ import {
   extractMentions,
 } from '@/lib/characters/mention-utils';
 import { searchCharacters, type MentionCandidate } from '@/lib/characters/mock-store';
-import { mockGenerateScene } from '@/lib/editor/mock-generate';
 import { MentionDropdown } from './MentionDropdown';
 
 export function ChatPanel() {
@@ -106,14 +105,33 @@ export function ChatPanel() {
 
     setPanelGenerating(selectedPanelId);
     try {
-      const { imageUrl } = await mockGenerateScene({ prompt: trimmed, mentions });
+      const res = await fetch('/api/generate/scene', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: trimmed,
+          mentionIds: mentions.map((m) => m.id),
+        }),
+      });
+      const data = (await res.json()) as {
+        imageUrl?: string;
+        providerId?: string;
+        elapsedMs?: number;
+        actualCostCents?: number;
+        error?: string;
+        hint?: string;
+      };
+      if (!res.ok || !data.imageUrl) {
+        throw new Error(data.error ?? 'unknown error');
+      }
       setPanelResult(selectedPanelId, {
-        imageUrl,
+        imageUrl: data.imageUrl,
         prompt: trimmed,
         mentionIds: mentions.map((m) => m.id),
       });
+      const providerLabel = data.providerId === 'fake' ? 'fake (mock)' : data.providerId;
       patchMessage(pendingId, {
-        content: `패널 ${selectedPanelId} 생성 완료. (mock — 실제 생성은 Phase 1)`,
+        content: `패널 ${selectedPanelId} 생성 완료 · provider=${providerLabel} · ${data.elapsedMs}ms · ${data.actualCostCents}¢`,
         status: 'done',
       });
     } catch (err) {
