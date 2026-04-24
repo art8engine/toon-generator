@@ -1,0 +1,28 @@
+{
+  "id": "character-sheet.v1",
+  "version": "1.0.0",
+  "description": "캐릭터 레퍼런스 시트 — 다각도 포즈(front/3-4/side/back) + 표정 샘플. Nano Banana 일관성 활용.",
+  "defaults": {
+    "width": 1024,
+    "height": 1024,
+    "steps": 30,
+    "cfg": 6
+  },
+  "providerBindings": {
+    "google-ai": {
+      "model": "gemini-2.5-flash-image",
+      "instruction": "Generate a character reference sheet in authentic black-and-white Japanese manga style. Include front view, 3/4 view, side view, and back view on a single canvas with plain white background. Use only black ink lineart with manga screentone shading. Absolutely no color."
+    },
+    "replicate": {
+      "model": "asiryan/counterfeit-v3",
+      "inputMapping": {
+        "prompt": "slots.prompt",
+        "negative_prompt": "slots.negativePrompt",
+        "width": "slots.width",
+        "height": "slots.height",
+        "num_inference_steps": "slots.steps",
+        "guidance_scale": "slots.cfg"
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "id": "panel-refinement.v1",
+  "version": "1.0.0",
+  "description": "거친 스케치 또는 콘티를 정제된 망가 패널로 업스케일. ControlNet-scribble 기반.",
+  "defaults": {
+    "width": 768,
+    "height": 1024,
+    "steps": 20,
+    "cfg": 5
+  },
+  "providerBindings": {
+    "replicate": {
+      "model": "jagilley/controlnet-scribble",
+      "inputMapping": {
+        "prompt": "slots.prompt",
+        "negative_prompt": "slots.negativePrompt",
+        "image": "slots.controlImage.url",
+        "num_inference_steps": "slots.steps",
+        "guidance_scale": "slots.cfg"
+      }
+    }
+  }
+}

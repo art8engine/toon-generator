@@ -1,0 +1,39 @@
+{
+  "id": "manga-scene.v1",
+  "version": "1.0.0",
+  "description": "흑백 망가 패널 장면 생성. SDXL + manga LoRA + (optional) IP-Adapter + ControlNet.",
+  "defaults": {
+    "width": 768,
+    "height": 1024,
+    "steps": 28,
+    "cfg": 7,
+    "sampler": "euler_ancestral",
+    "loras": [{ "name": "manga-style-v1", "weight": 0.8 }]
+  },
+  "providerBindings": {
+    "replicate": {
+      "model": "asiryan/counterfeit-v3",
+      "inputMapping": {
+        "prompt": "slots.prompt",
+        "negative_prompt": "slots.negativePrompt",
+        "width": "slots.width",
+        "height": "slots.height",
+        "num_inference_steps": "slots.steps",
+        "guidance_scale": "slots.cfg",
+        "seed": "slots.seed"
+      }
+    },
+    "local-gpu": {
+      "comfyWorkflowFile": "workflows/manga-scene-v1.comfy.json",
+      "inputMapping": {
+        "CLIPTextEncode.positive.text": "slots.prompt",
+        "CLIPTextEncode.negative.text": "slots.negativePrompt",
+        "EmptyLatentImage.width": "slots.width",
+        "EmptyLatentImage.height": "slots.height",
+        "KSampler.steps": "slots.steps",
+        "KSampler.cfg": "slots.cfg",
+        "KSampler.seed": "slots.seed"
+      }
+    }
+  }
+}
