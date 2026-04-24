@@ -1,5 +1,5 @@
 import { EditorLayout } from '@/components/editor/EditorLayout';
-import { A4Canvas } from '@/components/editor/A4Canvas';
+import { MangaGrid } from '@/components/editor/MangaGrid';
 import { ChatPanel } from '@/components/editor/ChatPanel';
 import { EditorToolbar } from '@/components/editor/Toolbar';
 
@@ -10,7 +10,7 @@ export default async function EditorPage({ params }: { params: Promise<Params> }
   return (
     <EditorLayout
       toolbar={<EditorToolbar pageLabel={`page: ${pageId}`} />}
-      canvas={<A4Canvas />}
+      canvas={<MangaGrid />}
       chat={<ChatPanel />}
     />
   );

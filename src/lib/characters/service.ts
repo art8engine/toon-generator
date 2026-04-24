@@ -1,4 +1,4 @@
-import type { Character, CharacterAsset } from './types';
+import type { Character, CharacterAsset, CharacterKind } from './types';
 import type { PromptIR } from '../ai/prompt/ir';
 import type { CharacterReference } from '../ai/providers/base';
 
@@ -29,6 +29,7 @@ export class CharacterService {
   async create(params: {
     userId: string;
     name: string;
+    kind: CharacterKind;
     descriptionIR: PromptIR;
     styleTags?: string[];
     seedBaseline?: number;
@@ -36,6 +37,7 @@ export class CharacterService {
     return this.repo.insertCharacter({
       userId: params.userId,
       name: params.name,
+      kind: params.kind,
       descriptionIR: params.descriptionIR,
       styleTags: params.styleTags ?? [],
       seedBaseline: params.seedBaseline,

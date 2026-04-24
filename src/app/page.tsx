@@ -24,12 +24,14 @@ export default function LandingPage() {
             >
               에디터 열어보기
             </Link>
-            <Link
-              href="/characters"
+            <a
+              href="https://github.com/art8engine/toon-generator"
+              target="_blank"
+              rel="noreferrer"
               className="rounded-md border border-paper-border px-6 py-3 hover:bg-paper-soft"
             >
-              캐릭터 디자이너
-            </Link>
+              GitHub
+            </a>
           </div>
         </div>
 
