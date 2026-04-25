@@ -23,6 +23,20 @@ export interface PanelCell {
   status: 'empty' | 'generating' | 'done' | 'error';
 }
 
+export type BubbleShape = 'round' | 'jagged' | 'thought';
+
+export interface Bubble {
+  id: string;
+  panelId: string;
+  /** Normalized 0–1 coordinates relative to the panel cell. */
+  x: number; // centre x
+  y: number; // centre y
+  w: number; // width
+  h: number; // height
+  shape: BubbleShape;
+  text: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -38,6 +52,7 @@ interface EditorState {
   panels: PanelCell[];
   selectedPanelId: string | null;
   messages: ChatMessage[];
+  bubbles: Bubble[];
 
   setLayout: (layout: LayoutPreset) => void;
   selectPanel: (id: string | null) => void;
@@ -50,6 +65,10 @@ interface EditorState {
   addMessage: (msg: Omit<ChatMessage, 'id' | 'createdAt'>) => string;
   patchMessage: (id: string, patch: Partial<ChatMessage>) => void;
   clearPanel: (panelId: string) => void;
+
+  addBubble: (panelId: string, init?: Partial<Bubble>) => string;
+  updateBubble: (id: string, patch: Partial<Bubble>) => void;
+  deleteBubble: (id: string) => void;
 }
 
 const initialPanels: Record<LayoutPreset, PanelCell[]> = {
@@ -85,6 +104,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   layout: 'grid-2x3',
   panels: initialPanels['grid-2x3'],
   selectedPanelId: 'p1',
+  bubbles: [],
   messages: [
     {
       id: 'welcome',
@@ -149,5 +169,31 @@ export const useEditorStore = create<EditorState>((set) => ({
             }
           : p,
       ),
+      bubbles: s.bubbles.filter((b) => b.panelId !== panelId),
     })),
+
+  addBubble: (panelId, init) => {
+    const id = `b-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const bubble: Bubble = {
+      id,
+      panelId,
+      x: 0.5,
+      y: 0.3,
+      w: 0.45,
+      h: 0.22,
+      shape: 'round',
+      text: '',
+      ...init,
+    };
+    set((s) => ({ bubbles: [...s.bubbles, bubble] }));
+    return id;
+  },
+
+  updateBubble: (id, patch) =>
+    set((s) => ({
+      bubbles: s.bubbles.map((b) => (b.id === id ? { ...b, ...patch } : b)),
+    })),
+
+  deleteBubble: (id) =>
+    set((s) => ({ bubbles: s.bubbles.filter((b) => b.id !== id) })),
 }));

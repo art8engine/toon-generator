@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { appConfig } from '@config/app';
 import { useEditorStore, type PanelCell } from '@/lib/editor/store';
+import { BubbleLayer } from './BubbleLayer';
 
 /**
  * MangaGrid — A4 페이지 위에 만화 패널 그리드.
@@ -23,6 +24,7 @@ export function MangaGrid() {
   const selectPanel = useEditorStore((s) => s.selectPanel);
   const setLayout = useEditorStore((s) => s.setLayout);
   const clearPanel = useEditorStore((s) => s.clearPanel);
+  const addBubble = useEditorStore((s) => s.addBubble);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -85,6 +87,7 @@ export function MangaGrid() {
                 selected={selectedPanelId === p.id}
                 onSelect={() => selectPanel(p.id)}
                 onClear={() => clearPanel(p.id)}
+                onAddBubble={() => addBubble(p.id)}
               />
             ))}
           </div>
@@ -103,22 +106,34 @@ function PanelView({
   selected,
   onSelect,
   onClear,
+  onAddBubble,
 }: {
   panel: PanelCell;
   selected: boolean;
   onSelect: () => void;
   onClear: () => void;
+  onAddBubble: () => void;
 }) {
   const border = selected
     ? 'ring-2 ring-ink ring-offset-0'
     : 'ring-1 ring-ink/90';
 
+  // Plain div with role=button so the cell can host nested interactive
+  // children (bubbles, their resize handles, text inputs) — those would be
+  // illegal inside a real <button>.
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
       className={
-        'group relative flex items-center justify-center overflow-hidden bg-paper text-left transition ' +
+        'group relative flex items-center justify-center overflow-hidden bg-paper text-left transition focus:outline-none ' +
         border
       }
       style={{
@@ -148,11 +163,25 @@ function PanelView({
             alt={panel.prompt ?? panel.id}
             className="h-full w-full object-cover"
           />
-          <div className="absolute inset-x-0 bottom-0 bg-paper/90 px-2 py-1 text-[10px] text-ink-soft opacity-0 backdrop-blur-sm transition group-hover:opacity-100">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-paper/90 px-2 py-1 text-[10px] text-ink-soft opacity-0 backdrop-blur-sm transition group-hover:opacity-100">
             {panel.prompt}
           </div>
+          <BubbleLayer panelId={panel.id} />
           <button
             type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddBubble();
+            }}
+            className="absolute bottom-1 left-1 rounded bg-paper/80 px-1.5 py-0.5 text-[10px] text-ink-soft opacity-0 transition group-hover:opacity-100 hover:bg-paper"
+            aria-label="말풍선 추가"
+          >
+            + 말풍선
+          </button>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               onClear();
@@ -166,11 +195,11 @@ function PanelView({
       )}
 
       {selected && (
-        <span className="absolute left-1 top-1 rounded bg-ink px-1.5 py-0.5 text-[10px] font-mono text-paper">
+        <span className="pointer-events-none absolute left-1 top-1 rounded bg-ink px-1.5 py-0.5 text-[10px] font-mono text-paper">
           {panel.id} · 선택됨
         </span>
       )}
-    </button>
+    </div>
   );
 }
 
