@@ -50,18 +50,17 @@ export function MangaGrid() {
 
   return (
     <div ref={containerRef} className="flex h-full w-full flex-col items-center gap-3 p-6">
-      <div className="flex items-center gap-2 text-xs text-ink-muted">
-        <span>레이아웃:</span>
+      <div className="flex items-center gap-1 text-xs">
         {(['grid-2x2', 'grid-2x3', 'grid-manga-feature-top'] as const).map((preset) => (
           <button
             key={preset}
             type="button"
             onClick={() => setLayout(preset)}
             className={
-              'rounded-md border px-2 py-1 text-xs ' +
+              'rounded-md border px-2 py-1 ' +
               (layout === preset
                 ? 'border-ink bg-ink text-paper'
-                : 'border-paper-border hover:bg-paper-soft')
+                : 'border-paper-border text-ink-muted hover:bg-paper-soft')
             }
           >
             {labelFor(preset)}
@@ -103,9 +102,6 @@ export function MangaGrid() {
         )}
       </div>
 
-      <p className="text-[11px] text-ink-muted">
-        패널 클릭 → 선택 · 선택한 패널에 우측 채팅으로 장면을 생성합니다
-      </p>
     </div>
   );
 }
@@ -157,17 +153,11 @@ function PanelView({
       }}
     >
       {panel.status === 'empty' && (
-        <div className="flex flex-col items-center gap-1 text-ink-muted">
-          <span className="text-xs font-mono">{panel.id}</span>
-          <span className="text-[10px]">클릭 → 선택 → 채팅으로 장면 생성</span>
-        </div>
+        <span className="font-mono text-[10px] text-ink-muted opacity-40">{panel.id}</span>
       )}
 
       {panel.status === 'generating' && (
-        <div className="flex flex-col items-center gap-2 text-ink-muted">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-ink border-t-transparent" />
-          <span className="text-[11px]">생성 중…</span>
-        </div>
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-ink border-t-transparent" />
       )}
 
       {panel.status === 'done' && panel.imageUrl && (
@@ -189,10 +179,11 @@ function PanelView({
               e.stopPropagation();
               onAddBubble();
             }}
-            className="absolute bottom-1 left-1 rounded bg-paper/80 px-1.5 py-0.5 text-[10px] text-ink-soft opacity-0 transition group-hover:opacity-100 hover:bg-paper"
+            title="말풍선 추가"
+            className="absolute bottom-1 left-1 grid h-5 w-5 place-items-center rounded bg-paper/80 text-[12px] text-ink-soft opacity-0 transition group-hover:opacity-100 hover:bg-paper"
             aria-label="말풍선 추가"
           >
-            + 말풍선
+            +
           </button>
           <button
             type="button"
@@ -201,26 +192,22 @@ function PanelView({
               e.stopPropagation();
               onClear();
             }}
-            className="absolute right-1 top-1 rounded bg-paper/80 px-1.5 py-0.5 text-[10px] text-ink-soft opacity-0 transition group-hover:opacity-100 hover:bg-paper"
+            title="패널 지우기"
+            className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded bg-paper/80 text-[10px] text-ink-soft opacity-0 transition group-hover:opacity-100 hover:bg-paper"
             aria-label="패널 지우기"
           >
-            지우기
+            ✕
           </button>
         </>
       )}
 
       {selected && (
-        <>
-          <span className="pointer-events-none absolute left-1 top-1 rounded bg-ink px-1.5 py-0.5 text-[10px] font-mono text-paper">
-            {panel.id} · 선택됨
-          </span>
-          <PanelResizeHandle
-            panel={panel}
-            gridRef={gridRef}
-            gridDims={gridDims}
-            onResize={onResize}
-          />
-        </>
+        <PanelResizeHandle
+          panel={panel}
+          gridRef={gridRef}
+          gridDims={gridDims}
+          onResize={onResize}
+        />
       )}
     </div>
   );
@@ -283,9 +270,9 @@ function labelFor(preset: string): string {
     case 'grid-2x2':
       return '2×2';
     case 'grid-2x3':
-      return '2×3 (기본)';
+      return '2×3';
     case 'grid-manga-feature-top':
-      return '상단 와이드';
+      return '와이드';
     default:
       return preset;
   }

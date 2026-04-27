@@ -53,9 +53,12 @@ export function EditorToolbar({ pageLabel }: { pageLabel?: string }) {
             type="button"
             onClick={() => setOpen((o) => !o)}
             disabled={exporting}
-            className="rounded-md border border-paper-border px-3 py-1 text-xs hover:bg-paper-soft disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-md border border-paper-border px-3 py-1 text-xs hover:bg-paper-soft disabled:opacity-50"
           >
-            {exporting ? '내보내는 중…' : '내보내기'}
+            {exporting && (
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-ink border-t-transparent" />
+            )}
+            내보내기
           </button>
           {open && !exporting && (
             <div className="absolute right-0 top-full z-10 mt-1 flex w-32 flex-col rounded-md border border-paper-border bg-paper text-xs shadow-lg">

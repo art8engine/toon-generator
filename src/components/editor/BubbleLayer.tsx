@@ -135,8 +135,8 @@ function BubbleNode({
         />
       ) : (
         <div className="absolute inset-x-[14%] inset-y-[22%] flex items-center justify-center text-center text-[11px] leading-tight">
-          <span className={bubble.text ? 'whitespace-pre-wrap text-ink' : 'text-ink-muted'}>
-            {bubble.text || '더블클릭'}
+          <span className={bubble.text ? 'whitespace-pre-wrap text-ink' : 'text-ink-muted opacity-30'}>
+            {bubble.text || '⋯'}
           </span>
         </div>
       )}

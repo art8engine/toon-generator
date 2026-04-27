@@ -75,11 +75,7 @@ export function ChatPanel() {
     const trimmed = input.trim();
     if (!trimmed) return;
     if (!selectedPanelId) {
-      addMessage({
-        role: 'assistant',
-        content: '먼저 좌측에서 장면을 넣을 패널을 선택해주세요.',
-        status: 'done',
-      });
+      addMessage({ role: 'assistant', content: '패널 선택 필요', status: 'done' });
       return;
     }
 
@@ -96,10 +92,7 @@ export function ChatPanel() {
 
     const pendingId = addMessage({
       role: 'assistant',
-      content:
-        mentions.length > 0
-          ? `${mentions.map((m) => '@' + m.name).join(', ')} 참조해서 패널 ${selectedPanelId} 생성 중…`
-          : `패널 ${selectedPanelId} 생성 중…`,
+      content: '생성 중…',
       status: 'sending',
     });
 
@@ -129,9 +122,8 @@ export function ChatPanel() {
         prompt: trimmed,
         mentionIds: mentions.map((m) => m.id),
       });
-      const providerLabel = data.providerId === 'fake' ? 'fake (mock)' : data.providerId;
       patchMessage(pendingId, {
-        content: `패널 ${selectedPanelId} 생성 완료 · provider=${providerLabel} · ${data.elapsedMs}ms · ${data.actualCostCents}¢`,
+        content: `완료 · ${data.providerId} · ${data.elapsedMs}ms`,
         status: 'done',
       });
     } catch (err) {
@@ -145,10 +137,8 @@ export function ChatPanel() {
   return (
     <div className="flex h-full flex-col">
       <header className="flex h-12 items-center justify-between border-b border-paper-border px-4">
-        <span className="text-sm font-medium">AI 어시스턴트</span>
-        <span className="text-xs text-ink-muted">
-          {selectedPanelId ? `선택 패널: ${selectedPanelId}` : '패널 미선택'}
-        </span>
+        <span className="text-sm font-medium">AI</span>
+        <span className="font-mono text-xs text-ink-muted">{selectedPanelId ?? '—'}</span>
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4 text-sm">
@@ -190,10 +180,6 @@ export function ChatPanel() {
             보내기
           </button>
         </div>
-        <p className="mt-2 text-[11px] text-ink-muted">
-          팁: <kbd className="rounded border border-paper-border px-1">@</kbd> 입력 → 캐릭터 선택 (↑↓/Enter).
-          저장된 캐릭터 관리는 Phase 1에서 추가됩니다.
-        </p>
       </form>
     </div>
   );

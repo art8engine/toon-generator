@@ -112,16 +112,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   panels: initialPanels['grid-2x3'],
   selectedPanelId: 'p1',
   bubbles: [],
-  messages: [
-    {
-      id: 'welcome',
-      role: 'assistant',
-      content:
-        '안녕하세요. 좌측에서 패널을 선택하고 그리고 싶은 장면을 설명해주세요. 저장된 캐릭터는 "@"를 입력하면 불러올 수 있어요. 예: "@용사 힘멜 이 @용사의 검 을 들고 고블린을 베는 장면"',
-      status: 'done',
-      createdAt: Date.now(),
-    },
-  ],
+  messages: [],
 
   setLayout: (layout) =>
     set({ layout, panels: initialPanels[layout], selectedPanelId: initialPanels[layout][0]?.id ?? null }),
