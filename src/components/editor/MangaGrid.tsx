@@ -71,6 +71,7 @@ export function MangaGrid() {
         className="relative bg-paper shadow-[0_0_0_1px_var(--paper-border),0_12px_40px_-12px_rgba(0,0,0,0.15)]"
         style={{ width: size.w, height: size.h }}
         aria-label="A4 페이지"
+        data-export-target="a4-page"
       >
         {size.w > 0 && (
           <div
