@@ -25,6 +25,8 @@ export function MangaGrid() {
   const setLayout = useEditorStore((s) => s.setLayout);
   const clearPanel = useEditorStore((s) => s.clearPanel);
   const addBubble = useEditorStore((s) => s.addBubble);
+  const setPanelSpan = useEditorStore((s) => s.setPanelSpan);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -75,6 +77,7 @@ export function MangaGrid() {
       >
         {size.w > 0 && (
           <div
+            ref={gridRef}
             className="absolute inset-3 grid gap-2"
             style={{
               gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
@@ -89,6 +92,11 @@ export function MangaGrid() {
                 onSelect={() => selectPanel(p.id)}
                 onClear={() => clearPanel(p.id)}
                 onAddBubble={() => addBubble(p.id)}
+                onResize={(rs, cs) =>
+                  setPanelSpan(p.id, rs, cs, { maxRow: rows, maxCol: cols })
+                }
+                gridRef={gridRef}
+                gridDims={{ rows, cols }}
               />
             ))}
           </div>
@@ -108,12 +116,18 @@ function PanelView({
   onSelect,
   onClear,
   onAddBubble,
+  onResize,
+  gridRef,
+  gridDims,
 }: {
   panel: PanelCell;
   selected: boolean;
   onSelect: () => void;
   onClear: () => void;
   onAddBubble: () => void;
+  onResize: (rowSpan: number, colSpan: number) => void;
+  gridRef: React.RefObject<HTMLDivElement | null>;
+  gridDims: { rows: number; cols: number };
 }) {
   const border = selected
     ? 'ring-2 ring-ink ring-offset-0'
@@ -196,11 +210,71 @@ function PanelView({
       )}
 
       {selected && (
-        <span className="pointer-events-none absolute left-1 top-1 rounded bg-ink px-1.5 py-0.5 text-[10px] font-mono text-paper">
-          {panel.id} · 선택됨
-        </span>
+        <>
+          <span className="pointer-events-none absolute left-1 top-1 rounded bg-ink px-1.5 py-0.5 text-[10px] font-mono text-paper">
+            {panel.id} · 선택됨
+          </span>
+          <PanelResizeHandle
+            panel={panel}
+            gridRef={gridRef}
+            gridDims={gridDims}
+            onResize={onResize}
+          />
+        </>
       )}
     </div>
+  );
+}
+
+function PanelResizeHandle({
+  panel,
+  gridRef,
+  gridDims,
+  onResize,
+}: {
+  panel: PanelCell;
+  gridRef: React.RefObject<HTMLDivElement | null>;
+  gridDims: { rows: number; cols: number };
+  onResize: (rowSpan: number, colSpan: number) => void;
+}) {
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const grid = gridRef.current;
+    if (!grid) return;
+    const rect = grid.getBoundingClientRect();
+    // CSS gap-2 = 8 px between cells
+    const gap = 8;
+    const cellW = (rect.width - gap * (gridDims.cols - 1)) / gridDims.cols;
+    const cellH = (rect.height - gap * (gridDims.rows - 1)) / gridDims.rows;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startRowSpan = panel.rowSpan;
+    const startColSpan = panel.colSpan;
+    const target = e.currentTarget;
+    target.setPointerCapture(e.pointerId);
+
+    const onMove = (ev: PointerEvent) => {
+      const dCols = Math.round((ev.clientX - startX) / (cellW + gap));
+      const dRows = Math.round((ev.clientY - startY) / (cellH + gap));
+      onResize(startRowSpan + dRows, startColSpan + dCols);
+    };
+    const onUp = (ev: PointerEvent) => {
+      target.releasePointerCapture(ev.pointerId);
+      target.removeEventListener('pointermove', onMove);
+      target.removeEventListener('pointerup', onUp);
+    };
+    target.addEventListener('pointermove', onMove);
+    target.addEventListener('pointerup', onUp);
+  };
+
+  return (
+    <div
+      onPointerDown={onPointerDown}
+      onClick={(e) => e.stopPropagation()}
+      title="드래그해서 패널 크기 조정"
+      className="absolute -bottom-1 -right-1 z-10 h-4 w-4 cursor-nwse-resize rounded-sm border border-paper bg-ink shadow-sm hover:bg-ink-soft"
+      aria-label="패널 크기 조정 핸들"
+    />
   );
 }
 

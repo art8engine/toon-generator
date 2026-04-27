@@ -69,6 +69,13 @@ interface EditorState {
   addBubble: (panelId: string, init?: Partial<Bubble>) => string;
   updateBubble: (id: string, patch: Partial<Bubble>) => void;
   deleteBubble: (id: string) => void;
+
+  setPanelSpan: (
+    panelId: string,
+    desiredRowSpan: number,
+    desiredColSpan: number,
+    bounds: { maxRow: number; maxCol: number },
+  ) => void;
 }
 
 const initialPanels: Record<LayoutPreset, PanelCell[]> = {
@@ -196,4 +203,53 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   deleteBubble: (id) =>
     set((s) => ({ bubbles: s.bubbles.filter((b) => b.id !== id) })),
+
+  setPanelSpan: (panelId, desiredRowSpan, desiredColSpan, bounds) =>
+    set((s) => {
+      const target = s.panels.find((p) => p.id === panelId);
+      if (!target) return s;
+
+      // Cap at the page bounds so the panel can't extend past the grid.
+      const ceilRowSpan = Math.max(1, Math.min(desiredRowSpan, bounds.maxRow - target.row + 1));
+      const ceilColSpan = Math.max(1, Math.min(desiredColSpan, bounds.maxCol - target.col + 1));
+
+      // Trim spans down until they no longer overlap any sibling.
+      let rowSpan = ceilRowSpan;
+      let colSpan = ceilColSpan;
+      const others = s.panels.filter((p) => p.id !== panelId);
+      while (colSpan > 1 && hasOverlap(target, rowSpan, colSpan, others)) colSpan -= 1;
+      while (rowSpan > 1 && hasOverlap(target, rowSpan, colSpan, others)) rowSpan -= 1;
+      // Final pass — if colSpan got trimmed first, growing rowSpan again may now fit.
+      while (colSpan < ceilColSpan && !hasOverlap(target, rowSpan, colSpan + 1, others)) {
+        colSpan += 1;
+      }
+
+      if (rowSpan === target.rowSpan && colSpan === target.colSpan) return s;
+
+      return {
+        panels: s.panels.map((p) =>
+          p.id === panelId ? { ...p, rowSpan, colSpan } : p,
+        ),
+      };
+    }),
 }));
+
+function hasOverlap(
+  target: PanelCell,
+  rowSpan: number,
+  colSpan: number,
+  others: PanelCell[],
+): boolean {
+  const t = {
+    row: target.row,
+    col: target.col,
+    rowEnd: target.row + rowSpan,
+    colEnd: target.col + colSpan,
+  };
+  for (const o of others) {
+    const overlapsX = !(t.colEnd <= o.col || o.col + o.colSpan <= t.col);
+    const overlapsY = !(t.rowEnd <= o.row || o.row + o.rowSpan <= t.row);
+    if (overlapsX && overlapsY) return true;
+  }
+  return false;
+}
